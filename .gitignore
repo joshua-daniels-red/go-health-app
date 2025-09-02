@@ -1,0 +1,19 @@
+# Binaries
+/bin/
+server
+
+# Logs
+*.log
+
+# Build cache
+*.out
+
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# OS-specific
+.DS_Store
+Thumbs.db

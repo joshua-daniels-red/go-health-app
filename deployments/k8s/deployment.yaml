@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-health
+  labels:
+    app: go-health
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-health
+  template:
+    metadata:
+      labels:
+        app: go-health
+    spec:
+      containers:
+      - name: go-health
+        image: go-health:latest   # built locally, used with docker
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080

@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: go-health-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: localhost   # 👈 optional; can be replaced with custom domain
+    http:
+      paths:
+      - path: /health
+        pathType: Prefix
+        backend:
+          service:
+            name: go-health-service
+            port:
+              number: 80
