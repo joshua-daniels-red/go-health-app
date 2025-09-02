@@ -1,12 +1,9 @@
 # Binaries
-/bin/
-server
+/server
+*.out
 
 # Logs
 *.log
-
-# Build cache
-*.out
 
 
 # IDE files
