@@ -1,6 +1,12 @@
 # Go Health App
 
-This repository contains a simple Go application built with [Gin](https://github.com/gin-gonic/gin). The app exposes a single `/health` endpoint that returns a JSON response `{ "status": "ok" }`. The project is containerized with Docker and deployable to Kubernetes with Ingress routing.
+This repository contains a Go application built with [Gin](https://github.com/gin-gonic/gin). It exposes:
+
+* `/health` – health check endpoint
+* `/data` – serves a paginated list of movies from static JSON data
+* `/process?op=imdb|title` – integrates with a Python script that performs transformations on the `/data` results
+
+The project is containerized with Docker and deployable to Kubernetes with Ingress routing.
 
 ---
 
@@ -9,6 +15,7 @@ This repository contains a simple Go application built with [Gin](https://github
 ### Prerequisites
 
 * [Go 1.24+](https://golang.org/doc/install)
+* [Python 3.12+](https://www.python.org/downloads/) (only if running Python outside container)
 * [Docker Desktop](https://www.docker.com/products/docker-desktop) with Kubernetes enabled, or [Minikube](https://minikube.sigs.k8s.io/docs/)
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 * (Optional) [Helm](https://helm.sh/) for ingress-nginx installation
@@ -19,29 +26,43 @@ This repository contains a simple Go application built with [Gin](https://github
 go run ./cmd/server
 ```
 
-Test the endpoint:
+Test endpoints:
 
 ```bash
 curl http://localhost:8080/health
 # {"status":"ok"}
+
+curl http://localhost:8080/data?page=1&page_size=2
+# returns first 2 movies
+
+curl http://localhost:8080/process?op=imdb
+# returns simulated imdb score changes
+
+curl http://localhost:8080/process?op=title
+# returns simulated title changes
 ```
 
-### Build and Run with Docker
+---
+
+## 2. Build and Run with Docker
 
 ```bash
 docker build -t go-health:latest -f deployments/Dockerfile .
 docker run -p 8080:8080 go-health:latest
 ```
 
-Test again:
+Test:
 
 ```bash
 curl http://localhost:8080/health
+curl http://localhost:8080/process?op=imdb
 ```
+
+The Docker image includes both the Go server and the Python script.
 
 ---
 
-## 2. Access via Local Kubernetes Ingress
+## 3. Access via Local Kubernetes Ingress
 
 ### Step 1. Build Docker Image for Local Cluster
 
@@ -78,12 +99,13 @@ kubectl get ingress
 
 ```bash
 curl http://localhost/health
-# {"status":"ok"}
+curl http://localhost/data?page=1&page_size=2
+curl http://localhost/process?op=imdb
 ```
 
 ---
 
-## 3. Mapping a Custom Domain in Production
+## 4. Mapping a Custom Domain in Production
 
 In production, you’ll typically expose your service using a domain name instead of `localhost`.
 
@@ -123,7 +145,7 @@ curl http://api.example.com/health
 
 ---
 
-## 4. Configure SSL/TLS with Certificates
+## 5. Configure SSL/TLS with Certificates
 
 For production, HTTPS should be enabled. The standard tool is [cert-manager](https://cert-manager.io/).
 
@@ -184,6 +206,20 @@ spec:
             name: go-health-service
             port:
               number: 80
+      - path: /data
+        pathType: Prefix
+        backend:
+          service:
+            name: go-health-service
+            port:
+              number: 80
+      - path: /process
+        pathType: Prefix
+        backend:
+            service:
+              name: go-health-service
+              port:
+                number: 80
 ```
 
 Re-apply:
@@ -210,5 +246,5 @@ Expected:
 
 * Local run: `go run ./cmd/server` or Docker.
 * Kubernetes: apply manifests under `deployments/k8s`.
-* Ingress: accessible at `http://localhost/health` locally.
+* Ingress: accessible at `http://localhost/health`, `/data`, and `/process` locally.
 * Production: map DNS → ingress IP, update Ingress `host`, enable TLS with cert-manager.

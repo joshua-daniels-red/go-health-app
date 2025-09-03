@@ -16,7 +16,10 @@ spec:
     spec:
       containers:
       - name: go-health
-        image: go-health:latest   # built locally, used with docker
+        image: go-health:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+        env:
+        - name: GO_SERVER_URL
+          value: "http://go-health-service:80"   # 👈 service DNS inside cluster

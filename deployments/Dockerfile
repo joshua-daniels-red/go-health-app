@@ -14,17 +14,23 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
 
 # ---- Runtime stage ----
-FROM gcr.io/distroless/base-debian12:nonroot
+FROM python:3.12-slim
 
-WORKDIR /
+WORKDIR /app
 
-# Copy binary from builder
+# Copy Go binary
 COPY --from=builder /app/server .
+
+# Copy Python app
+COPY python-app/ ./python_app/
+
+# Copy data files
+COPY --from=builder /app/data ./data
+
+# Install Python dependencies
+RUN pip install --no-cache-dir requests
 
 # Expose HTTP port
 EXPOSE 8080
 
-# Run as non-root user
-USER nonroot:nonroot
-
-ENTRYPOINT ["/server"]
+ENTRYPOINT ["./server"]

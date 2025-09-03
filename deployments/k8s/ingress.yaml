@@ -15,3 +15,17 @@ spec:
             name: go-health-service
             port:
               number: 80
+      - path: /data
+        pathType: Prefix
+        backend:
+          service:
+            name: go-health-service
+            port:
+              number: 80
+      - path: /process
+        pathType: Prefix
+        backend:
+          service:
+            name: go-health-service
+            port:
+              number: 80
