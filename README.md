@@ -103,6 +103,14 @@ curl http://localhost/data?page=1&page_size=2
 curl http://localhost/process?op=imdb
 ```
 
+### Step 5. Remove Deployments
+
+```bash
+kubectl delete -f deployments/k8s/deployment.yaml
+kubectl delete -f deployments/k8s/service.yaml
+kubectl delete -f deployments/k8s/ingress.yaml
+```
+
 ---
 
 ## 4. Mapping a Custom Domain in Production
